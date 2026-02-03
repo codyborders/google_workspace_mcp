@@ -40,9 +40,9 @@ session_middleware = Middleware(MCPSessionMiddleware)
 
 # Custom FastMCP that adds secure middleware stack for OAuth 2.1
 class SecureFastMCP(FastMCP):
-    def streamable_http_app(self) -> "Starlette":
+    def http_app(self) -> "Starlette":
         """Override to add secure middleware stack for OAuth 2.1."""
-        app = super().streamable_http_app()
+        app = super().http_app()
 
         # Add middleware in order (first added = outermost layer)
         # Session Management - extracts session info for MCP context
@@ -398,6 +398,13 @@ def configure_server_for_http():
                         )
                 except Exception as e:
                     logger.warning(f"Could not mount well-known routes: {e}")
+
+                # Log OAuth routes for debugging
+                try:
+                    routes = provider.get_routes()
+                    logger.info(f"OAuth routes mounted: {[r.path for r in routes]}")
+                except Exception as e:
+                    logger.debug(f"Could not enumerate OAuth routes: {e}")
 
             # Always set auth provider for token validation in middleware
             set_auth_provider(provider)

@@ -327,9 +327,9 @@ class OAuthConfig:
         oauth_base = self.get_oauth_base_url()
         metadata = {
             "issuer": "https://accounts.google.com",
-            "authorization_endpoint": f"{oauth_base}/oauth2/authorize",
-            "token_endpoint": f"{oauth_base}/oauth2/token",
-            "registration_endpoint": f"{oauth_base}/oauth2/register",
+            "authorization_endpoint": f"{oauth_base}/oauth/authorize",
+            "token_endpoint": f"{oauth_base}/oauth/token",
+            "registration_endpoint": f"{oauth_base}/oauth/register",
             "jwks_uri": "https://www.googleapis.com/oauth2/v3/certs",
             "userinfo_endpoint": "https://openidconnect.googleapis.com/v1/userinfo",
             "response_types_supported": ["code", "token"],
