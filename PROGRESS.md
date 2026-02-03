@@ -31,3 +31,43 @@ Implemented MCP OAuth 2.1 with Dynamic Client Registration (DCR) to enable Claud
 
 ### Documentation
 - Created `implementation-plan.md` with detailed implementation strategy
+
+---
+
+## 2026-02-03 - Deployed to GCP VM (mcp-vm)
+
+### Summary
+Deployed MCP OAuth 2.1 DCR server to GCP VM for remote Claude Desktop connections.
+
+### Deployment Details
+- **URL**: `https://mcp-vm.tail744e10.ts.net/workspace-dcr`
+- **Port**: 8003 (internal)
+- **User Email**: info@johnnysroofingaz.com
+- **Service**: systemd user service `workspace-mcp-dcr.service`
+
+### Configuration
+```
+WORKSPACE_EXTERNAL_URL=https://mcp-vm.tail744e10.ts.net/workspace-dcr
+MCP_ENABLE_OAUTH21=true
+WORKSPACE_MCP_PORT=8003
+```
+
+### Fix Applied
+- Fixed `SecureFastMCP.http_app()` to accept `**kwargs` for FastMCP compatibility
+
+### Verified Endpoints
+- OAuth metadata: `/.well-known/oauth-authorization-server` - Working
+- DCR registration: `/register` - Working
+- Authorization: `/authorize` - Working
+
+### Claude Desktop Configuration
+```json
+{
+  "mcpServers": {
+    "google-workspace": {
+      "url": "https://mcp-vm.tail744e10.ts.net/workspace-dcr/mcp",
+      "transport": "streamable-http"
+    }
+  }
+}
+```
