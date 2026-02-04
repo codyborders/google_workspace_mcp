@@ -443,6 +443,34 @@ async def health_check(request: Request):
     )
 
 
+@server.custom_route("/.well-known/oauth-protected-resource/{resource_path:path}", methods=["GET"])
+async def protected_resource_metadata(request: Request) -> JSONResponse:
+    """
+    Serve OAuth 2.0 Protected Resource Metadata per RFC 9728.
+
+    This endpoint handles the resource_metadata URL that FastMCP includes in
+    WWW-Authenticate headers. It returns metadata pointing clients to the
+    correct authorization server.
+    """
+    from auth.oauth_config import get_oauth_config
+
+    config = get_oauth_config()
+    oauth_base = config.get_oauth_base_url()
+
+    # Get current scopes
+    required_scopes = sorted(get_current_scopes())
+
+    # Build protected resource metadata per RFC 9728
+    metadata_response = {
+        "resource": str(request.url).replace("/.well-known/oauth-protected-resource/", "/"),
+        "authorization_servers": [oauth_base],
+        "scopes_supported": required_scopes,
+        "bearer_methods_supported": ["header"],
+    }
+
+    return JSONResponse(metadata_response)
+
+
 @server.custom_route("/attachments/{file_id}", methods=["GET"])
 async def serve_attachment(file_id: str):
     """Serve a stored attachment file."""
