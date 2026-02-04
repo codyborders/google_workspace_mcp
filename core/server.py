@@ -13,7 +13,7 @@ from fastmcp.server.auth.providers.google import GoogleProvider
 
 from auth.oauth21_session_store import get_oauth21_session_store, set_auth_provider
 from auth.google_auth import handle_auth_callback, start_auth_flow, check_client_secrets
-from auth.oauth_config import is_oauth21_enabled, is_external_oauth21_provider
+from auth.oauth_config import get_oauth_config, is_oauth21_enabled, is_external_oauth21_provider
 from auth.mcp_session_middleware import MCPSessionMiddleware
 from auth.oauth_responses import (
     create_error_response,
@@ -94,9 +94,6 @@ def configure_server_for_http():
 
     if transport_mode != "streamable-http":
         return
-
-    # Use centralized OAuth configuration
-    from auth.oauth_config import get_oauth_config
 
     config = get_oauth_config()
 
@@ -452,23 +449,16 @@ async def protected_resource_metadata(request: Request) -> JSONResponse:
     WWW-Authenticate headers. It returns metadata pointing clients to the
     correct authorization server.
     """
-    from auth.oauth_config import get_oauth_config
-
     config = get_oauth_config()
-    oauth_base = config.get_oauth_base_url()
+    resource_path = request.path_params.get("resource_path", "")
+    resource_url = f"{config.get_oauth_base_url()}/{resource_path}"
 
-    # Get current scopes
-    required_scopes = sorted(get_current_scopes())
-
-    # Build protected resource metadata per RFC 9728
-    metadata_response = {
-        "resource": str(request.url).replace("/.well-known/oauth-protected-resource/", "/"),
-        "authorization_servers": [oauth_base],
-        "scopes_supported": required_scopes,
+    return JSONResponse({
+        "resource": resource_url,
+        "authorization_servers": [config.get_oauth_base_url()],
+        "scopes_supported": sorted(get_current_scopes()),
         "bearer_methods_supported": ["header"],
-    }
-
-    return JSONResponse(metadata_response)
+    })
 
 
 @server.custom_route("/attachments/{file_id}", methods=["GET"])
