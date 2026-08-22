@@ -1,7 +1,6 @@
 # auth/google_auth.py
 
 import asyncio
-import json
 import jwt
 import logging
 import os
@@ -221,55 +220,6 @@ def load_client_secrets_from_env() -> Optional[Dict[str, Any]]:
 
     logger.debug("OAuth client credentials not found in environment variables")
     return None
-
-
-def load_client_secrets(client_secrets_path: str) -> Dict[str, Any]:
-    """
-    Loads the client secrets from environment variables (preferred) or from the client secrets file.
-
-    Priority order:
-    1. Environment variables (GOOGLE_OAUTH_CLIENT_ID, GOOGLE_OAUTH_CLIENT_SECRET)
-    2. File-based credentials at the specified path
-
-    Args:
-        client_secrets_path: Path to the client secrets JSON file (used as fallback)
-
-    Returns:
-        Client secrets configuration dict
-
-    Raises:
-        ValueError: If client secrets file has invalid format
-        IOError: If file cannot be read and no environment variables are set
-    """
-    # First, try to load from environment variables
-    env_config = load_client_secrets_from_env()
-    if env_config:
-        # Extract the "web" config from the environment structure
-        return env_config["web"]
-
-    # Fall back to loading from file
-    try:
-        with open(client_secrets_path, "r") as f:
-            client_config = json.load(f)
-            # The file usually contains a top-level key like "web" or "installed"
-            if "web" in client_config:
-                logger.info(
-                    f"Loaded OAuth client credentials from file: {client_secrets_path}"
-                )
-                return client_config["web"]
-            elif "installed" in client_config:
-                logger.info(
-                    f"Loaded OAuth client credentials from file: {client_secrets_path}"
-                )
-                return client_config["installed"]
-            else:
-                logger.error(
-                    f"Client secrets file {client_secrets_path} has unexpected format."
-                )
-                raise ValueError("Invalid client secrets file format")
-    except (IOError, json.JSONDecodeError) as e:
-        logger.error(f"Error loading client secrets file {client_secrets_path}: {e}")
-        raise
 
 
 def check_client_secrets() -> Optional[str]:
@@ -712,7 +662,6 @@ def get_credentials(
             logger.debug(
                 "[get_credentials] Refreshing token using embedded client credentials"
             )
-            # client_config = load_client_secrets(client_secrets_path) # Not strictly needed if creds have client_id/secret
             credentials.refresh(Request())
             logger.info(
                 f"[get_credentials] Credentials refreshed successfully. User: '{user_google_email}', Session: '{session_id}'"
