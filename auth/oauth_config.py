@@ -312,49 +312,6 @@ class OAuthConfig:
         # Default to OAuth 2.0 for maximum compatibility
         return "oauth20"
 
-    def get_authorization_server_metadata(
-        self, scopes: Optional[List[str]] = None
-    ) -> Dict[str, Any]:
-        """
-        Get OAuth authorization server metadata per RFC 8414.
-
-        Args:
-            scopes: Optional list of supported scopes to include in metadata
-
-        Returns:
-            Authorization server metadata dictionary
-        """
-        oauth_base = self.get_oauth_base_url()
-        metadata = {
-            "issuer": "https://accounts.google.com",
-            "authorization_endpoint": f"{oauth_base}/oauth2/authorize",
-            "token_endpoint": f"{oauth_base}/oauth2/token",
-            "registration_endpoint": f"{oauth_base}/oauth2/register",
-            "jwks_uri": "https://www.googleapis.com/oauth2/v3/certs",
-            "userinfo_endpoint": "https://openidconnect.googleapis.com/v1/userinfo",
-            "response_types_supported": ["code", "token"],
-            "grant_types_supported": ["authorization_code", "refresh_token"],
-            "token_endpoint_auth_methods_supported": [
-                "client_secret_post",
-                "client_secret_basic",
-            ],
-            "code_challenge_methods_supported": self.supported_code_challenge_methods,
-        }
-
-        # Include scopes if provided
-        if scopes is not None:
-            metadata["scopes_supported"] = scopes
-
-        # Add OAuth 2.1 specific metadata
-        if self.oauth21_enabled:
-            metadata["pkce_required"] = True
-            # OAuth 2.1 deprecates implicit flow
-            metadata["response_types_supported"] = ["code"]
-            # OAuth 2.1 requires exact redirect URI matching
-            metadata["require_exact_redirect_uri"] = True
-
-        return metadata
-
 
 # Global configuration instance
 _oauth_config = None
