@@ -28,24 +28,6 @@ def check_public_link_permission(permissions: List[Dict[str, Any]]) -> bool:
     )
 
 
-def format_public_sharing_error(file_name: str, file_id: str) -> str:
-    """
-    Format error message for files without public sharing.
-
-    Args:
-        file_name: Name of the file
-        file_id: Google Drive file ID
-
-    Returns:
-        str: Formatted error message
-    """
-    return (
-        f"❌ Permission Error: '{file_name}' not shared publicly. "
-        f"Set 'Anyone with the link' → 'Viewer' in Google Drive sharing. "
-        f"File: https://drive.google.com/file/d/{file_id}/view"
-    )
-
-
 def get_drive_image_url(file_id: str) -> str:
     """
     Get the correct Drive URL format for publicly shared images.
