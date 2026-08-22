@@ -73,21 +73,6 @@ def _html_to_text(html: str) -> str:
         return html
 
 
-def _extract_message_body(payload):
-    """
-    Helper function to extract plain text body from a Gmail message payload.
-    (Maintained for backward compatibility)
-
-    Args:
-        payload (dict): The message payload from Gmail API
-
-    Returns:
-        str: The plain text body content, or empty string if not found
-    """
-    bodies = _extract_message_bodies(payload)
-    return bodies.get("text", "")
-
-
 def _extract_message_bodies(payload):
     """
     Helper function to extract both plain text and HTML bodies from a Gmail message payload.
