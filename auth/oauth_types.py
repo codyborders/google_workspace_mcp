@@ -6,7 +6,7 @@ improving code maintainability and type safety.
 """
 
 from dataclasses import dataclass
-from typing import Optional, List, Dict, Any
+from typing import Optional, Dict, Any
 
 from fastmcp.server.auth import AccessToken
 
@@ -17,36 +17,6 @@ class WorkspaceAccessToken(AccessToken):
     session_id: Optional[str] = None
     sub: Optional[str] = None
     email: Optional[str] = None
-
-
-@dataclass
-class OAuth21ServiceRequest:
-    """
-    Encapsulates parameters for OAuth 2.1 service authentication requests.
-
-    This parameter object pattern reduces function complexity and makes
-    it easier to extend authentication parameters in the future.
-    """
-
-    service_name: str
-    version: str
-    tool_name: str
-    user_google_email: str
-    required_scopes: List[str]
-    session_id: Optional[str] = None
-    auth_token_email: Optional[str] = None
-    allow_recent_auth: bool = False
-    context: Optional[Dict[str, Any]] = None
-
-    def to_legacy_params(self) -> dict:
-        """Convert to legacy parameter format for backward compatibility."""
-        return {
-            "service_name": self.service_name,
-            "version": self.version,
-            "tool_name": self.tool_name,
-            "user_google_email": self.user_google_email,
-            "required_scopes": self.required_scopes,
-        }
 
 
 @dataclass
