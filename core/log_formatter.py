@@ -116,45 +116,6 @@ class EnhancedLogFormatter(logging.Formatter):
         return message
 
 
-def setup_enhanced_logging(
-    log_level: int = logging.INFO, use_colors: bool = True
-) -> None:
-    """
-    Set up enhanced logging with ASCII prefix formatter for the entire application.
-
-    Args:
-        log_level: The logging level to use (default: INFO)
-        use_colors: Whether to use ANSI colors (default: True)
-    """
-    # Create the enhanced formatter
-    formatter = EnhancedLogFormatter(use_colors=use_colors)
-
-    # Get the root logger
-    root_logger = logging.getLogger()
-
-    # Update existing console handlers
-    for handler in root_logger.handlers:
-        if isinstance(handler, logging.StreamHandler) and handler.stream.name in [
-            "<stderr>",
-            "<stdout>",
-        ]:
-            handler.setFormatter(formatter)
-
-    # If no console handler exists, create one
-    console_handlers = [
-        h
-        for h in root_logger.handlers
-        if isinstance(h, logging.StreamHandler)
-        and h.stream.name in ["<stderr>", "<stdout>"]
-    ]
-
-    if not console_handlers:
-        console_handler = logging.StreamHandler()
-        console_handler.setFormatter(formatter)
-        console_handler.setLevel(log_level)
-        root_logger.addHandler(console_handler)
-
-
 def configure_file_logging(logger_name: str = None) -> bool:
     """
     Configure file logging based on stateless mode setting.
