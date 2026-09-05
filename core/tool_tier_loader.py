@@ -149,23 +149,6 @@ class ToolTierLoader:
         return services
 
 
-def get_tools_for_tier(
-    tier: TierLevel, services: Optional[List[str]] = None
-) -> List[str]:
-    """
-    Convenience function to get tools for a specific tier.
-
-    Args:
-        tier: The tier level (core, extended, complete)
-        services: Optional list of services to filter by
-
-    Returns:
-        List of tool names for the specified tier level
-    """
-    loader = ToolTierLoader()
-    return loader.get_tools_up_to_tier(tier, services)
-
-
 def resolve_tools_from_tier(
     tier: TierLevel, services: Optional[List[str]] = None
 ) -> tuple[List[str], List[str]]:
