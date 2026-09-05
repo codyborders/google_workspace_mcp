@@ -35,29 +35,6 @@ def is_tool_enabled(tool_name: str) -> bool:
     return tool_name in _enabled_tools
 
 
-def conditional_tool(server, tool_name: str):
-    """
-    Decorator that conditionally registers a tool based on the enabled tools set.
-
-    Args:
-        server: The FastMCP server instance
-        tool_name: The name of the tool to register
-
-    Returns:
-        Either the registered tool decorator or a no-op decorator
-    """
-
-    def decorator(func: Callable) -> Callable:
-        if is_tool_enabled(tool_name):
-            logger.debug(f"Registering tool: {tool_name}")
-            return server.tool()(func)
-        else:
-            logger.debug(f"Skipping tool registration: {tool_name}")
-            return func
-
-    return decorator
-
-
 def wrap_server_tool_method(server):
     """
     Track tool registrations and filter them post-registration.
