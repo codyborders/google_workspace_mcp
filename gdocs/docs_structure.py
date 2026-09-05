@@ -5,10 +5,7 @@ This module provides utilities for parsing and analyzing the structure
 of Google Docs documents, including finding tables, cells, and other elements.
 """
 
-import logging
 from typing import Any, Optional
-
-logger = logging.getLogger(__name__)
 
 
 def parse_document_structure(doc_data: dict[str, Any]) -> dict[str, Any]:
@@ -200,124 +197,6 @@ def find_tables(doc_data: dict[str, Any]) -> list[dict[str, Any]]:
         )
 
     return tables
-
-
-def get_table_cell_indices(
-    doc_data: dict[str, Any], table_index: int = 0
-) -> Optional[list[list[tuple[int, int]]]]:
-    """
-    Get content indices for all cells in a specific table.
-
-    Args:
-        doc_data: Raw document data from Google Docs API
-        table_index: Index of the table (0-based)
-
-    Returns:
-        2D list of (start_index, end_index) tuples for each cell, or None if table not found
-    """
-    tables = find_tables(doc_data)
-
-    if table_index >= len(tables):
-        logger.warning(
-            f"Table index {table_index} not found. Document has {len(tables)} tables."
-        )
-        return None
-
-    table = tables[table_index]
-    cell_indices = []
-
-    for row in table["cells"]:
-        row_indices = []
-        for cell in row:
-            # Each cell contains at least one paragraph
-            # Find the first paragraph in the cell for content insertion
-            cell_content = cell.get("content_elements", [])
-            if cell_content:
-                # Look for the first paragraph in cell content
-                first_para = None
-                for element in cell_content:
-                    if "paragraph" in element:
-                        first_para = element["paragraph"]
-                        break
-
-                if first_para and "elements" in first_para and first_para["elements"]:
-                    # Insert at the start of the first text run in the paragraph
-                    first_text_element = first_para["elements"][0]
-                    if "textRun" in first_text_element:
-                        start_idx = first_text_element.get(
-                            "startIndex", cell["start_index"] + 1
-                        )
-                        end_idx = first_text_element.get("endIndex", start_idx + 1)
-                        row_indices.append((start_idx, end_idx))
-                        continue
-
-            # Fallback: use cell boundaries with safe margins
-            content_start = cell["start_index"] + 1
-            content_end = cell["end_index"] - 1
-            row_indices.append((content_start, content_end))
-        cell_indices.append(row_indices)
-
-    return cell_indices
-
-
-def find_element_at_index(
-    doc_data: dict[str, Any], index: int
-) -> Optional[dict[str, Any]]:
-    """
-    Find what element exists at a given index in the document.
-
-    Args:
-        doc_data: Raw document data from Google Docs API
-        index: Position in the document
-
-    Returns:
-        Information about the element at that position, or None
-    """
-    structure = parse_document_structure(doc_data)
-
-    for element in structure["body"]:
-        if element["start_index"] <= index < element["end_index"]:
-            element_copy = element.copy()
-
-            # If it's a table, find which cell contains the index
-            if element["type"] == "table" and "cells" in element:
-                for row_idx, row in enumerate(element["cells"]):
-                    for col_idx, cell in enumerate(row):
-                        if cell["start_index"] <= index < cell["end_index"]:
-                            element_copy["containing_cell"] = {
-                                "row": row_idx,
-                                "column": col_idx,
-                                "cell_start": cell["start_index"],
-                                "cell_end": cell["end_index"],
-                            }
-                            break
-
-            return element_copy
-
-    return None
-
-
-def get_next_paragraph_index(doc_data: dict[str, Any], after_index: int = 0) -> int:
-    """
-    Find the next safe position to insert content after a given index.
-
-    Args:
-        doc_data: Raw document data from Google Docs API
-        after_index: Index after which to find insertion point
-
-    Returns:
-        Safe index for insertion
-    """
-    structure = parse_document_structure(doc_data)
-
-    # Find the first paragraph element after the given index
-    for element in structure["body"]:
-        if element["type"] == "paragraph" and element["start_index"] > after_index:
-            # Insert at the end of the previous element or start of this paragraph
-            return element["start_index"]
-
-    # If no paragraph found, return the end of document
-    return structure["total_length"] - 1 if structure["total_length"] > 0 else 1
 
 
 def analyze_document_complexity(doc_data: dict[str, Any]) -> dict[str, Any]:
