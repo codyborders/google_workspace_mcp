@@ -338,73 +338,6 @@ class ValidationManager:
 
         return True, ""
 
-    def validate_element_insertion_params(
-        self, element_type: str, index: int, **kwargs
-    ) -> Tuple[bool, str]:
-        """
-        Validate parameters for element insertion.
-
-        Args:
-            element_type: Type of element to insert
-            index: Insertion index
-            **kwargs: Additional parameters specific to element type
-
-        Returns:
-            Tuple of (is_valid, error_message)
-        """
-        # Validate element type
-        if element_type not in self.validation_rules["valid_element_types"]:
-            valid_types = ", ".join(self.validation_rules["valid_element_types"])
-            return (
-                False,
-                f"Invalid element_type '{element_type}'. Must be one of: {valid_types}",
-            )
-
-        # Validate index
-        if not isinstance(index, int) or index < 0:
-            return False, f"index must be a non-negative integer, got {index}"
-
-        # Validate element-specific parameters
-        if element_type == "table":
-            rows = kwargs.get("rows")
-            columns = kwargs.get("columns")
-
-            if not rows or not columns:
-                return False, "Table insertion requires 'rows' and 'columns' parameters"
-
-            if not isinstance(rows, int) or not isinstance(columns, int):
-                return False, "Table rows and columns must be integers"
-
-            if rows <= 0 or columns <= 0:
-                return False, "Table rows and columns must be positive integers"
-
-            if rows > self.validation_rules["table_max_rows"]:
-                return (
-                    False,
-                    f"Too many rows ({rows}). Maximum: {self.validation_rules['table_max_rows']}",
-                )
-
-            if columns > self.validation_rules["table_max_columns"]:
-                return (
-                    False,
-                    f"Too many columns ({columns}). Maximum: {self.validation_rules['table_max_columns']}",
-                )
-
-        elif element_type == "list":
-            list_type = kwargs.get("list_type")
-
-            if not list_type:
-                return False, "List insertion requires 'list_type' parameter"
-
-            if list_type not in self.validation_rules["valid_list_types"]:
-                valid_types = ", ".join(self.validation_rules["valid_list_types"])
-                return (
-                    False,
-                    f"Invalid list_type '{list_type}'. Must be one of: {valid_types}",
-                )
-
-        return True, ""
-
     def validate_header_footer_params(
         self, section_type: str, header_footer_type: str = "DEFAULT"
     ) -> Tuple[bool, str]:
@@ -512,29 +445,3 @@ class ValidationManager:
             return False, f"Text too long ({len(text)} characters). Maximum: {max_len}"
 
         return True, ""
-
-    def get_validation_summary(self) -> Dict[str, Any]:
-        """
-        Get a summary of all validation rules and constraints.
-
-        Returns:
-            Dictionary containing validation rules
-        """
-        return {
-            "constraints": self.validation_rules.copy(),
-            "supported_operations": {
-                "table_operations": ["create_table", "populate_table"],
-                "text_operations": ["insert_text", "format_text", "find_replace"],
-                "element_operations": [
-                    "insert_table",
-                    "insert_list",
-                    "insert_page_break",
-                ],
-                "header_footer_operations": ["update_header", "update_footer"],
-            },
-            "data_formats": {
-                "table_data": "2D list of strings: [['col1', 'col2'], ['row1col1', 'row1col2']]",
-                "text_formatting": "Optional boolean/integer parameters for styling",
-                "document_indices": "Non-negative integers for position specification",
-            },
-        }
